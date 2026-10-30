@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from graph.builder import graph
 
 
@@ -7,16 +10,30 @@ def main():
     initial_state = {
         "user_input": user_task,
         "todos": [],
-        "completed_tasks": [],
+        "next_agent": "",
+
+        "research_results": [],
+        "task_results": [],
+        "summarized_results": [],
+
+        "citations": [],
+        "images": [],
+
         "files": {},
-        "next_agent": ""
+        "logs": [],
+        "completed_tasks": [],
+        "agent_status": {},
+
+        "review_status": "",
+        "review_messages": [],
+        "judge_scores": {}
     }
 
     result = graph.invoke(initial_state)
 
-    print("\n" + "=" * 50)
+    print("\n" + "=" * 60)
     print("FINAL REPORT")
-    print("=" * 50)
+    print("=" * 60)
 
     print(
         result["files"].get(
@@ -25,9 +42,37 @@ def main():
         )
     )
 
-    print("\nCOMPLETED TASKS:")
+    # -------------------------
+    # Debug images
+    # -------------------------
+    print("\n" + "=" * 60)
+    print("IMAGES")
+    print("=" * 60)
+
+    images = result.get("images", [])
+
+    if images:
+        for img in images:
+            print(img)
+    else:
+        print("No images generated")
+
+    print("\n" + "=" * 60)
+    print("COMPLETED TASKS")
+    print("=" * 60)
+
     for task in result["completed_tasks"]:
         print(f"- {task}")
+
+    print("\n" + "=" * 60)
+    print("REVIEW STATUS")
+    print("=" * 60)
+
+    print(result.get("review_status", "Not reviewed"))
+
+    if result.get("review_messages"):
+        for msg in result["review_messages"]:
+            print(f"- {msg}")
 
 
 if __name__ == "__main__":

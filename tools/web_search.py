@@ -1,4 +1,4 @@
-from duckduckgo_search import DDGS
+from ddgs import DDGS
 
 def search_web(query):
     results = []
@@ -14,7 +14,19 @@ def search_web(query):
                     "content": r.get("body", "")
                 })
 
+        # Handle empty search results
+        if not results:
+            results.append({
+                "title": "No results found",
+                "url": "",
+                "content": f"No search results found for query: {query}"
+            })
+
     except Exception as e:
-        return f"Web search error: {str(e)}"
+        results.append({
+            "title": "Search Error",
+            "url": "",
+            "content": f"Web search error: {str(e)}"
+        })
 
     return results

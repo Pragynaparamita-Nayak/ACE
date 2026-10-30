@@ -1,31 +1,29 @@
-from models.llm import llm
-from tools.task_tool import delegate_task
+from langsmith import traceable
 
-
+@traceable(name="Supervisor Agent")
 def supervisor_node(state):
-    task = state["user_input"]
 
-    prompt = f"""
-    Choose the best agent for this task.
+    research_results = state.get("research_results", [])
+    summarized_results = state.get("summarized_results", [])
+    files = state.get("files", {})
+    review_status = state.get("review_status", "")
 
-    Available agents:
-    - research
-    - summarizer
+    # Step 1 → Research
+    if len(research_results) == 0:
+        state["next_agent"] = "research"
 
-    Task: {task}
+    # Step 2 → Summarizer
+    elif len(summarized_results) == 0:
+        state["next_agent"] = "summarizer"
 
-    Return only agent name.
-    """
+    # Step 3 → Synthesizer
+    elif "final_report.txt" not in files:
+        state["next_agent"] = "synthesizer"
 
-    response = llm.invoke(prompt)
-    chosen_agent = response.content.strip().lower()
+    # Step 4 → Reviewer
+    elif review_status == "":
+        state["next_agent"] = "reviewer"
 
-    routed_agent = delegate_task(chosen_agent)
-
-    if routed_agent is None:
-        routed_agent = "research"
-
-    state["next_agent"] = routed_agent
     state["completed_tasks"].append("Supervisor routing completed")
 
     return state
